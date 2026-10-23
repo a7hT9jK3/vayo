@@ -54,7 +54,16 @@ export default function Auth({ onUserLoaded }: AuthProps) {
       }
     } catch (err: any) {
       console.error('Google login/signup error:', err);
-      setError('فشل تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.');
+      if (err?.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      if (err?.code === 'auth/unauthorized-domain') {
+        setError(`هذا النطاق (${window.location.hostname}) غير مضاف في قائمة النطاقات المصرح بها (Authorized Domains) في Firebase Authentication. يرجى إضافته في إعدادات Firebase.`);
+      } else if (err?.code === 'auth/popup-blocked') {
+        setError('تم حظر النافذة المنبثقة من قبل المتصفح. يرجى السماح بالنوافذ المنبثقة ثم المحاولة مجدداً.');
+      } else {
+        setError(`فشل تسجيل الدخول عبر Google (${err?.message || 'خطأ غير معروف'}). يرجى المحاولة مرة أخرى.`);
+      }
     } finally {
       setLoading(false);
     }
