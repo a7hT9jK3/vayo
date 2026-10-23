@@ -1,0 +1,65 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+
+    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="45%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+
+    <linearGradient id="smileGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#1e40af" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background with subtle luxury rounded corners -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)" />
+  <rect x="2" y="2" width="508" height="508" rx="113" stroke="url(#borderGrad)" stroke-width="4" />
+  
+  <!-- Subtle center glow -->
+  <circle cx="256" cy="256" r="230" fill="url(#glowGrad)" />
+
+  <!-- VAYO Logomark centered -->
+  <g transform="translate(40, 162) scale(0.36)">
+    <!-- V -->
+    <path d="M180 120 L240 120 L315 320 L390 120 L450 120 L345 395 L285 395 Z" fill="url(#textGrad)" />
+
+    <!-- A -->
+    <path d="M375 395 L495 120 L570 120 L690 395 L625 395 L595 325 L465 325 L435 395 Z M530 180 L485 285 L575 285 Z" fill="url(#textGrad)" fill-rule="evenodd" />
+
+    <!-- Y -->
+    <path d="M590 120 L660 120 L740 235 L820 120 L890 120 L775 280 L775 395 L715 395 L715 280 Z" fill="url(#textGrad)" />
+
+    <!-- O OUTER -->
+    <circle cx="965" cy="250" r="120" fill="url(#textGrad)" />
+
+    <!-- O INNER -->
+    <circle cx="965" cy="250" r="62" fill="#0b1329" />
+
+    <!-- EYES -->
+    <circle cx="935" cy="250" r="10" fill="#ffffff" />
+    <circle cx="995" cy="250" r="10" fill="#ffffff" />
+
+    <!-- SMILE SWOOSH -->
+    <path d="M360 345 C520 470, 800 480, 1015 355" fill="none" stroke="url(#smileGrad)" stroke-width="24" stroke-linecap="round" />
+
+    <!-- ARROW -->
+    <path d="M990 330 L1060 315 L1028 380 Z" fill="url(#smileGrad)" />
+  </g>
+</svg>

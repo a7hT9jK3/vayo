@@ -1,0 +1,201 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {userId} (matches request.auth.uid)
+// Fields:
+//   - uid: string (required)
+//   - email: string (required, email format)
+//   - displayName: string (required)
+//   - role: string (required, 'passenger', 'driver', or 'admin')
+//   - rating: number (optional)
+//   - totalRatings: number (optional)
+//   - isOnline: boolean (optional)
+//   - isVerified: boolean (optional)
+//   - verificationStatus: string (optional, 'pending', 'approved', 'rejected')
+//   - verificationDate: timestamp (optional)
+//   - isSuspended: boolean (optional)
+//   - phoneNumber: string (required)
+//   - currentLocation: map (optional, {lat, lng})
+//
+// Collection: rides
+// Document ID: {rideId}
+// Fields:
+//   - passengerId: string (required)
+//   - driverId: string (optional)
+//   - status: string (required, 'pending', 'accepted', 'completed', 'cancelled')
+//   - pickup: map (required, {lat, lng, address})
+//   - destination: map (required, {lat, lng, address})
+//   - createdAt: timestamp (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.email != null && request.auth.token.email in ["samikhadhraoui43@gmail.com", "samikhadhraoui905@gmail.com", "samikhadhraoui2016@gmail.com"]) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             data.email is string && isValidEmail(data.email) &&
+             data.displayName is string && data.displayName.size() > 0 &&
+             data.role in ['passenger', 'driver', 'admin'] &&
+             (!('vehicleType' in data) || data.vehicleType in ['taxi', 'delivery_car', 'delivery_truck_medium', 'delivery_truck_large']) &&
+             (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() >= 0)) &&
+             (!('companyName' in data) || (data.companyName is string && data.companyName.size() <= 200)) &&
+             (!('rating' in data) || data.rating is number) &&
+             (!('totalRatings' in data) || data.totalRatings is number) &&
+             (!('positiveRatings' in data) || data.positiveRatings is number) &&
+             (!('negativeRatings' in data) || data.negativeRatings is number) &&
+             (!('isOnline' in data) || data.isOnline is bool) &&
+             (!('isVerified' in data) || data.isVerified is bool) &&
+             (!('verificationStatus' in data) || data.verificationStatus in ['pending', 'approved', 'rejected']) &&
+             (!('verificationDate' in data) || (data.verificationDate is timestamp)) &&
+             (!('isSuspended' in data) || data.isSuspended is bool) &&
+             (!('deletionScheduledAt' in data) || (data.deletionScheduledAt is timestamp || data.deletionScheduledAt == null)) &&
+             (!('darkMode' in data) || data.darkMode is bool) &&
+             (!('currentLocation' in data) || (data.currentLocation is map));
+    }
+
+    function isValidRide(data) {
+      return data.passengerId is string &&
+             data.status in ['pending', 'accepted', 'completed', 'cancelled'] &&
+             (!('vehicleType' in data) || data.vehicleType in ['taxi', 'delivery_car', 'delivery_truck_medium', 'delivery_truck_large']) &&
+             data.pickup is map && 
+             data.pickup.lat is number && 
+             data.pickup.lng is number &&
+             data.pickup.address is string && 
+             data.destination is map && 
+             data.destination.lat is number && 
+             data.destination.lng is number &&
+             data.destination.address is string &&
+             data.createdAt == request.time &&
+             (!('passengerName' in data) || data.passengerName is string) &&
+             (!('passengerPhone' in data) || data.passengerPhone is string) &&
+             (!('driverName' in data) || data.driverName is string) &&
+             (!('driverPhone' in data) || data.driverPhone is string) &&
+             (!('driverRating' in data) || data.driverRating is number) &&
+             (!('driverPositiveRatings' in data) || data.driverPositiveRatings is number) &&
+             (!('driverNegativeRatings' in data) || data.driverNegativeRatings is number) &&
+             (!('rated' in data) || data.rated is bool) &&
+             (!('isManual' in data) || data.isManual is bool) &&
+             (!('cargoDetails' in data) || data.cargoDetails is string) &&
+             (!('passengerGPS' in data) || (data.passengerGPS is map && data.passengerGPS.lat is number && data.passengerGPS.lng is number));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Allow read (get and list) if:
+      // 1. User is an admin
+      // 2. User is the owner
+      // 3. It's a driver who is online and verified (allows listing on the map)
+      allow read: if isAuthenticated() && (
+        isAdmin() || 
+        isOwner(userId) || 
+        (resource.data.role == 'driver' && resource.data.isOnline == true && resource.data.isVerified == true)
+      );
+      
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role != 'admin' || isAdmin());
+      
+      allow delete: if isOwner(userId);
+      
+      allow update: if (isOwner(userId) && 
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid &&
+                       (request.resource.data.role == resource.data.role || isAdmin()) &&
+                       // Only admin can change verification and suspension fields
+                       (request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVerified', 'verificationStatus', 'verificationDate', 'isSuspended']) == false || isAdmin())
+                       ) || (
+                         // Allow passenger to rate a driver
+                         isAuthenticated() && 
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'totalRatings', 'positiveRatings', 'negativeRatings'])
+                       ) || isAdmin();
+    }
+
+    match /rides/{rideId} {
+      // Passengers see their own rides.
+      // Drivers see pending rides or rides they accepted.
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.passengerId ||
+        request.auth.uid == resource.data.driverId ||
+        resource.data.status == 'pending'
+      );
+
+      allow create: if isAuthenticated() && 
+                      request.resource.data.passengerId == request.auth.uid &&
+                      request.resource.data.status == 'pending' &&
+                      isValidRide(request.resource.data);
+
+      allow update: if isAuthenticated() && (
+        // Passenger can cancel their own ride (pending or accepted)
+        (request.auth.uid == resource.data.passengerId && 
+         resource.data.status in ['pending', 'accepted'] && 
+         request.resource.data.status == 'cancelled' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+        
+        // Driver can accept a pending ride
+        (resource.data.status == 'pending' && 
+         request.resource.data.status == 'accepted' &&
+         request.resource.data.driverId == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'driverId', 'driverName', 'driverPhone', 'driverRating', 'driverPositiveRatings', 'driverNegativeRatings'])) ||
+        
+        // Driver can complete their accepted ride
+        (resource.data.status == 'accepted' && 
+         resource.data.driverId == request.auth.uid &&
+         request.resource.data.status == 'completed' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+
+        // Driver can reject/un-accept their accepted ride (back to pending)
+        (resource.data.status == 'accepted' && 
+         resource.data.driverId == request.auth.uid &&
+         request.resource.data.status == 'pending' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'driverId'])) ||
+
+        // Passenger can rate a completed ride
+        (resource.data.status == 'completed' &&
+         request.auth.uid == resource.data.passengerId &&
+         request.resource.data.rated == true &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rated']))
+      );
+    }
+
+    match /_connection_test_/{docId} {
+      allow read: if true;
+    }
+  }
+}

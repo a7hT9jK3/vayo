@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information for both passengers and drivers.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique identifier for the user." },
+        "email": { "type": "string", "format": "email", "description": "User's email address." },
+        "displayName": { "type": "string", "description": "User's full name." },
+        "role": { "type": "string", "enum": ["passenger", "driver", "admin"], "description": "User's role in the system." },
+        "rating": { "type": "number", "description": "Average rating of the user." },
+        "totalRatings": { "type": "number", "description": "Total number of ratings received." },
+        "positiveRatings": { "type": "number", "description": "Count of positive ratings." },
+        "negativeRatings": { "type": "number", "description": "Count of negative ratings." },
+        "isOnline": { "type": "boolean", "description": "Whether the driver is currently online." },
+        "vehicleType": { "type": "string", "enum": ["taxi", "delivery_car", "delivery_truck_medium", "delivery_truck_large"], "description": "Type of vehicle the driver operates." },
+        "phoneNumber": { "type": "string", "description": "User's phone number." },
+        "isVerified": { "type": "boolean", "description": "Whether the driver has been verified by an admin." },
+        "verificationStatus": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Current verification status of the driver." },
+        "verificationDate": { "type": "string", "format": "date-time", "description": "Timestamp when the verification status was last updated." },
+        "isSuspended": { "type": "boolean", "description": "Whether the driver account is suspended by an admin." },
+        "currentLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          },
+          "description": "Driver's current GPS coordinates."
+        }
+      },
+      "required": ["uid", "email", "displayName", "role", "phoneNumber"]
+    },
+    "RideRequest": {
+      "title": "RideRequest",
+      "description": "A request for a ride from a passenger.",
+      "type": "object",
+      "properties": {
+        "passengerId": { "type": "string", "description": "UID of the passenger who requested the ride." },
+        "driverId": { "type": "string", "description": "UID of the driver who accepted the ride." },
+        "vehicleType": { "type": "string", "enum": ["taxi", "delivery_car", "delivery_truck_medium", "delivery_truck_large"], "description": "Requested vehicle category." },
+        "status": { "type": "string", "enum": ["pending", "accepted", "completed", "cancelled"], "description": "Current status of the ride." },
+        "pickup": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          },
+          "required": ["lat", "lng", "address"]
+        },
+        "destination": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          },
+          "required": ["lat", "lng", "address"]
+        },
+        "driverRating": { "type": "number", "description": "Rating of the driver at the time of accepting the ride." },
+        "driverPositiveRatings": { "type": "number", "description": "Positive rating count at time of acceptance." },
+        "driverNegativeRatings": { "type": "number", "description": "Negative rating count at time of acceptance." },
+        "rated": { "type": "boolean", "description": "Whether the passenger has rated this ride." },
+        "cargoDetails": { "type": "string", "description": "Details of the cargo (for transport vehicles)." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when the ride was requested." }
+      },
+      "required": ["passengerId", "status", "pickup", "destination", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of user profiles."
+    },
+    "/rides/{rideId}": {
+      "schema": "RideRequest",
+      "description": "Collection of ride requests."
+    }
+  }
+}

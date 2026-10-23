@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* --------------------------------------------------------------------------
+   DARK MODE OVERRIDES
+   These rules adapt the light-mode app structure into a high-contrast dark theme.
+   -------------------------------------------------------------------------- */
+
+html.dark,
+html.dark body {
+  background-color: #0d1117 !important; /* Premium dark background */
+  color: #e6edf3 !important;
+}
+
+/* Background overrides */
+html.dark .bg-white,
+html.dark div.bg-white,
+html.dark header.bg-white,
+html.dark section.bg-white {
+  background-color: #161b22 !important; /* Card dark background */
+}
+
+html.dark .bg-gray-50,
+html.dark div.bg-gray-50,
+html.dark main.bg-gray-50,
+html.dark section.bg-gray-50 {
+  background-color: #0d1117 !important;
+}
+
+html.dark .bg-gray-100,
+html.dark div.bg-gray-100,
+html.dark button.bg-gray-100,
+html.dark span.bg-gray-100 {
+  background-color: #21262d !important;
+}
+
+html.dark .bg-gray-200 {
+  background-color: #30363d !important;
+}
+
+/* Specific elements like detail modals & status cards */
+html.dark div[class*="bg-gray-50"] {
+  background-color: #21262d !important;
+}
+
+/* Border overrides */
+html.dark *,
+html.dark .border,
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-b,
+html.dark .border-t {
+  border-color: #30363d !important;
+}
+
+/* Text overrides */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark .text-gray-900,
+html.dark .text-gray-800,
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #f0f6fc !important;
+}
+
+html.dark p,
+html.dark span,
+html.dark label,
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
+  color: #8b949e !important;
+}
+
+/* Input Fields */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #0d1117 !important;
+  color: #f0f6fc !important;
+  border-color: #30363d !important;
+}
+
+html.dark input::placeholder {
+  color: #484f58 !important;
+}
+
+/* Ensure blue primary elements (like blue headers, icons, and CTA buttons) stay highlighted */
+html.dark .bg-blue-600 {
+  background-color: #1f6feb !important;
+}
+
+html.dark .text-blue-600 {
+  color: #58a6ff !important;
+}
+
+html.dark .bg-blue-50 {
+  background-color: rgba(56, 139, 253, 0.1) !important;
+  color: #58a6ff !important;
+}
+
+html.dark .text-blue-500 {
+  color: #58a6ff !important;
+}
+
+/* Leaflet maps: invert to create a futuristic map theme */
+html.dark .leaflet-container {
+  filter: invert(90%) hue-rotate(180deg) brightness(95%) contrast(95%) !important;
+}
+html.dark .leaflet-bar a,
+html.dark .leaflet-popup-content-wrapper,
+html.dark .leaflet-popup-tip {
+  filter: invert(100%) hue-rotate(180deg) !important;
+}

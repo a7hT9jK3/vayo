@@ -1,0 +1,6 @@
+{
+  "name": "VAYO",
+  "description": "منصة VAYO الذكية لتأجير السيارات الفاخرة وحجز الرحلات الفورية بكل سهولة وموثوقية.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
